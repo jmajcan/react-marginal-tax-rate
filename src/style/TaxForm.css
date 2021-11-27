@@ -1,0 +1,13 @@
+.container {
+    padding-top: 2.5em;
+    width: 35em;
+}
+
+.card {
+    background-color: #F6F6F6;
+    color: #2A384C;
+}
+
+.card-header {
+    text-align: center;
+}
