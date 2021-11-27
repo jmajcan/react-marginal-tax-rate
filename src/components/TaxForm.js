@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import ErrorMessage from './ErrorMessage';
 import IncomeTaxMessage from './IncomeTaxMessage';
 import LoadingModal from './LoadingModal';
+import '../style/TaxForm.css';
 
 class TaxForm extends Component {
     constructor(props) {
@@ -94,27 +95,33 @@ class TaxForm extends Component {
         return (
             <div class="container">
                 <LoadingModal show={ this.state.showModal } />
-                <h2>Marginal Tax Rate</h2>
-                <form class="form-inline" onSubmit={(event) => this.handleSubmit(event)}>
-                    <div class="form-group col-md-6 mb-2" >
-                        <label for="incomeInput">Annual Income</label>
-                        <input type="number" class="form-control" id="incomeInput" name="income" placeholder="Enter annual income" />
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Marginal Tax Rate</h2>
                     </div>
-                    <div class="form-group  col-md-2 mb-4">
-                        <label for="yearInput">Select tax year</label>
-                        <select class="form-control" id="yearInput" name="taxYear" >
-                            <option value="" selected disabled>Please select</option>
-                            <option value={2019} >2019</option>
-                            <option value={2020} >2020</option>
-                        </select>
+                    <div class="card-body">
+                        <form class="form-inline" onSubmit={(event) => this.handleSubmit(event)}>
+                            <div class="form-group col-md-5 mb-2" >
+                                <label for="incomeInput">Annual Income</label>
+                                <input type="number" class="form-control" id="incomeInput" name="income" placeholder="Enter annual income" />
+                            </div>
+                            <div class="form-group  col-md-5 mb-4">
+                                <label for="yearInput">Select tax year</label>
+                                <select class="form-control" id="yearInput" name="taxYear" >
+                                    <option value="" selected disabled>Please select</option>
+                                    <option value={2019} >2019</option>
+                                    <option value={2020} >2020</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary" >Submit</button>
+                        </form><br/>
+                        {this.state.isFormError ? <ErrorMessage status={this.state.error.errStatus} message={this.state.error.errMessage} /> : null}
+                        { !this.state.isFormError && this.state.isCalculationFinished ?
+                            <IncomeTaxMessage salary={this.state.income} year={this.state.year} incomeTax={this.state.incomeTax} />
+                            : null
+                        }
                     </div>
-                    <button type="submit" class="btn btn-primary" >Submit</button>
-                </form><br/>
-                {this.state.isFormError ? <ErrorMessage status={this.state.error.errStatus} message={this.state.error.errMessage} /> : null}
-                { !this.state.isFormError && this.state.isCalculationFinished ?
-                    <IncomeTaxMessage salary={this.state.income} year={this.state.year} incomeTax={this.state.incomeTax} />
-                    : null
-                }
+                </div>
             </div>
         );
     }
