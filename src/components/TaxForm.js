@@ -1,12 +1,17 @@
 import React, { Component } from 'react';
 import ErrorMessage from './ErrorMessage';
+import IncomeTaxMessage from './IncomeTaxMessage';
 
 class TaxForm extends Component {
     constructor(props) {
         super(props)
         this.state = {
+            incomeTax: 0,
+            year: null,
+            income: null,
             taxBrackets: {},
             isFormError: false,
+            isCalculationFinished: false,
             error: {
                 errStatus: null,
                 errMessage: ''
@@ -15,15 +20,14 @@ class TaxForm extends Component {
     }
 
     componentDidUpdate(prevProps, prevState){
-        if(this.state.year !== prevState.year){
-            this.getTaxBrackets();
+        if(this.state.taxBrackets !== prevState.taxBrackets){
+            console.log("Tax Brackets Acquired",this.state.taxBrackets);
         }
     }
 
-    getTaxBrackets = async (year) => {
-        const taxBracketResponse = await fetch(`http://localhost:5000/tax-calculator/brackets/${year}`)  
+    getTaxBrackets = async () => {
+        const taxBracketResponse = await fetch(`http://localhost:5000/tax-calculator/brackets/${this.state.year}`)  
             .then((response) => {
-                console.log(response)
                 if (response.ok) {
                     return response.json();
                 } else {
@@ -32,11 +36,12 @@ class TaxForm extends Component {
             })
             .then((resp) => {
                 this.setState({
+                    isFormError: false,
                     taxBrackets: resp.tax_brackets
                 });
+                return resp;
             })
             .catch((error) => {
-                console.log('CATCH ERROR: ', error);
                 this.setState({
                     isFormError: true,
                     error: {
@@ -45,16 +50,39 @@ class TaxForm extends Component {
                     }
                 })
             });
-        return taxBracketResponse;
+        if(taxBracketResponse){
+            this.calcIncomeTax();
+        }
     }
 
     handleSubmit = (event) => {
         event.preventDefault();
-        const taxBrackets = this.getTaxBrackets(event.target.taxYear.value);
-        if(taxBrackets){
-            // do calculation
-        }
-        console.log(this.state)
+        this.setState({
+            year: event.target.taxYear.value,
+            income: event.target.income.value,
+            isCalculationFinished: false
+        });
+        this.getTaxBrackets();
+    }
+
+    calcIncomeTax = () => {
+        let totalTax = 0;
+        this.state.taxBrackets.forEach(({min, max, rate}) => {
+            let income = this.state.income;
+            if(max !== undefined){
+                if(income > max){
+                    totalTax += (max - min) * rate;
+                } else if (income < max && income > min){
+                    totalTax += (max - income) * rate;
+                }
+            } else if(income > min){
+                totalTax += (income - min) * rate;
+            }
+        })
+        this.setState({ 
+            incomeTax: totalTax,
+            isCalculationFinished: true
+        });
     }
 
     render() {
@@ -75,8 +103,12 @@ class TaxForm extends Component {
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary" >Submit</button>
-                </form>
+                </form><br/>
                 {this.state.isFormError ? <ErrorMessage status={this.state.error.errStatus} message={this.state.error.errMessage} /> : null}
+                { !this.state.isFormError && this.state.isCalculationFinished ?
+                    <IncomeTaxMessage salary={this.state.income} year={this.state.year} incomeTax={this.state.incomeTax} />
+                    : null
+                }
             </div>
         );
     }

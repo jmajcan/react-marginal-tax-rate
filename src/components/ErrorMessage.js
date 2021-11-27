@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
-import { Alert } from 'react-bootstrap';
 
 
 class ErrorMessage extends Component {
-
-
     render() {
         return (
             <div>
