@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ErrorMessage from './ErrorMessage';
 import IncomeTaxMessage from './IncomeTaxMessage';
+import LoadingModal from './LoadingModal';
 
 class TaxForm extends Component {
     constructor(props) {
@@ -12,6 +13,7 @@ class TaxForm extends Component {
             taxBrackets: {},
             isFormError: false,
             isCalculationFinished: false,
+            showModal:false,
             error: {
                 errStatus: null,
                 errMessage: ''
@@ -44,6 +46,7 @@ class TaxForm extends Component {
             .catch((error) => {
                 this.setState({
                     isFormError: true,
+                    showModal: false,
                     error: {
                         errStatus: error.status,
                         errMessage: error.statusText
@@ -58,6 +61,7 @@ class TaxForm extends Component {
     handleSubmit = (event) => {
         event.preventDefault();
         this.setState({
+            showModal: true,
             year: event.target.taxYear.value,
             income: event.target.income.value,
             isCalculationFinished: false
@@ -81,13 +85,15 @@ class TaxForm extends Component {
         })
         this.setState({ 
             incomeTax: totalTax,
-            isCalculationFinished: true
+            isCalculationFinished: true,
+            showModal: false
         });
     }
 
     render() {
         return (
             <div class="container">
+                <LoadingModal show={ this.state.showModal } />
                 <h2>Marginal Tax Rate</h2>
                 <form class="form-inline" onSubmit={(event) => this.handleSubmit(event)}>
                     <div class="form-group col-md-6 mb-2" >
